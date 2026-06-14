@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мышление в эпоху ИИ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --white: #ffffff;
+      --white-70: rgba(255,255,255,0.7);
+      --white-40: rgba(255,255,255,0.4);
+      --white-15: rgba(255,255,255,0.15);
+      --white-08: rgba(255,255,255,0.08);
+      --white-05: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.15);
+      --dark-glass: rgba(0,0,0,0.55);
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: #050402;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED IMAGE BACKGROUND ── */
+    #bg-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: -10;
+      overflow: hidden;
+    }
+    #bg-img {
+      position: absolute;
+      width: 115%;
+      height: 115%;
+      top: -7.5%;
+      left: -7.5%;
+      object-fit: cover;
+      object-position: center;
+      animation: bgFloat 22s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    #bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.58);
+    }
+    @keyframes bgFloat {
+      0%   { transform: scale(1.00) translate(0%,    0%);    }
+      33%  { transform: scale(1.05) translate(-1.5%, 0.8%);  }
+      66%  { transform: scale(1.03) translate(1.5%,  -1%);   }
+      100% { transform: scale(1.07) translate(-0.5%, 1.2%);  }
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.25rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.3s, backdrop-filter 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(6,8,16,0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-head);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--white-70);
+      text-decoration: none;
+      font-size: 0.88rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #000;
+      background: var(--white);
+      padding: 0.55rem 1.5rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 5rem;
+      gap: 2rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 100px;
+      background: var(--white-15);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      font-size: 0.8rem;
+      color: var(--white-70);
+      letter-spacing: 0.05em;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.1s ease forwards;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #7cf7c0;
+      flex-shrink: 0;
+    }
+
+    .hero-title {
+      font-family: var(--font-head);
+      font-size: clamp(2.8rem, 9vw, 6rem);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      max-width: 820px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.25s ease forwards;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.2vw, 1.3rem);
+      color: var(--white-70);
+      max-width: 640px;
+      line-height: 1.65;
+      font-weight: 300;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s ease forwards;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.55s ease forwards;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--white);
+      color: #000;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.85rem 2.2rem;
+      border-radius: 6px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(255,255,255,0.25);
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      background: transparent;
+      color: var(--white);
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.85rem 2.2rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.3);
+      text-decoration: none;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .features-card {
+      width: 100%;
+      max-width: 780px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.7s ease forwards;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .feature-item {
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--white-70);
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .feature-divider {
+      width: 1px;
+      background: var(--border);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTION WRAPPER ── */
+    .section {
+      position: relative;
+      padding: 6rem 2.5rem;
+    }
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-dark {
+      background: var(--dark-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--white-40);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-family: var(--font-head);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      margin-bottom: 1rem;
+    }
+
+    /* ── INTRO ── */
+    .intro-quote {
+      font-family: var(--font-head);
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      margin-bottom: 3rem;
+      max-width: 800px;
+    }
+    .intro-quote em {
+      font-style: italic;
+      color: var(--white-70);
+    }
+
+    .intro-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+    .intro-cols p {
+      font-size: 0.97rem;
+      line-height: 1.8;
+      color: var(--white-70);
+    }
+
+    /* ── QUOTES CARDS ── */
+    .quotes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+    .quote-card {
+      background: var(--white-08);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 2rem 1.75rem;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+    .quote-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .quote-num {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--white-40);
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .quote-text {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    /* ── SKILLS ── */
+    .skills-list {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .skill-row {
+      display: grid;
+      grid-template-columns: 3.5rem 1fr 2fr;
+      gap: 2rem;
+      align-items: baseline;
+      padding: 1.75rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .skill-row:first-child { border-top: 1px solid var(--border); }
+    .skill-row:hover { background: var(--white-05); }
+    .skill-num {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white-40);
+    }
+    .skill-name {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .skill-desc {
+      font-size: 0.9rem;
+      color: var(--white-70);
+      line-height: 1.6;
+    }
+
+    /* ── BEFORE / AFTER ── */
+    .compare-wrap {
+      margin-top: 2.5rem;
+      background: var(--white-08);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .compare-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .compare-head-cell {
+      padding: 1.1rem 2rem;
+      font-family: var(--font-head);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-head-cell.before {
+      color: var(--white-40);
+      border-right: 1px solid var(--border);
+    }
+    .compare-head-cell.after { color: #7cf7c0; }
+
+    .compare-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-cell {
+      padding: 1rem 2rem;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .compare-cell.before {
+      color: var(--white-40);
+      border-right: 1px solid var(--border);
+    }
+    .compare-cell.after { color: var(--white); }
+
+    /* ── FORMAT ── */
+    .format-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+    .format-card {
+      background: var(--white-08);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      padding: 2rem;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+    .format-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .format-num {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--white-40);
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .format-title {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .format-desc {
+      font-size: 0.88rem;
+      color: var(--white-70);
+      line-height: 1.7;
+    }
+
+    /* ── OFFER CARD ── */
+    .offer-card {
+      margin-top: 2.5rem;
+      background: linear-gradient(135deg, rgba(124,247,192,0.07), rgba(124,247,192,0.02));
+      border: 1px solid rgba(124,247,192,0.25);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 2.5rem 3rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 2.5rem;
+    }
+    .offer-badge-box {
+      flex-shrink: 0;
+      border: 1px solid rgba(124,247,192,0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      min-width: 110px;
+    }
+    .offer-badge-num {
+      font-family: var(--font-head);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #7cf7c0;
+      line-height: 1;
+      display: block;
+    }
+    .offer-badge-label {
+      font-size: 0.72rem;
+      color: rgba(124,247,192,0.7);
+      letter-spacing: 0.08em;
+      margin-top: 0.3rem;
+    }
+    .offer-title {
+      font-family: var(--font-head);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .offer-desc {
+      font-size: 0.9rem;
+      color: var(--white-70);
+      line-height: 1.75;
+    }
+
+    /* ── INSTRUCTORS ── */
+    .instructors-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .instructor-card {
+      background: var(--white-08);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+    .instructor-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .instructor-photo {
+      width: 100%;
+      height: 320px;
+      object-fit: contain;
+      object-position: center center;
+      display: block;
+      background: rgba(10,10,14,0.6);
+      filter: grayscale(100%) brightness(0.9);
+    }
+    .instructor-body {
+      padding: 1.75rem;
+    }
+    .instructor-name {
+      font-family: var(--font-head);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .instructor-role {
+      font-size: 0.78rem;
+      color: var(--white-40);
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .instructor-bio {
+      font-size: 0.88rem;
+      color: var(--white-70);
+      line-height: 1.75;
+    }
+
+    /* ── WHO FOR ── */
+    .for-list {
+      list-style: none;
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .for-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+      color: var(--white-70);
+      line-height: 1.6;
+      align-items: baseline;
+      transition: color 0.2s;
+    }
+    .for-item:first-child { border-top: 1px solid var(--border); }
+    .for-item:hover { color: var(--white); }
+    .for-arrow {
+      color: var(--white-40);
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+
+    /* ── FOOTER CTA ── */
+    .footer-cta {
+      text-align: center;
+      padding: 8rem 2rem;
+      position: relative;
+    }
+    .footer-cta-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .footer-quote {
+      font-family: var(--font-head);
+      font-size: clamp(1.3rem, 3vw, 1.9rem);
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+      margin-bottom: 2.5rem;
+      color: var(--white);
+    }
+
+    /* ── SITE FOOTER ── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(12px);
+      padding: 1.75rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--white-40);
+    }
+
+    /* ── HERO SUBTITLE LINE ── */
+    .hero-title-sub {
+      font-size: 0.62em;
+      font-weight: 600;
+      font-family: var(--font-body);
+      opacity: 0.82;
+      letter-spacing: -0.01em;
+      display: block;
+      margin-top: -0.15em;
+    }
+
+    /* ── DIAGNOSTIC SECTION ── */
+    .diag-section { background: rgba(0,0,0,0.1); }
+    .diag-card {
+      border: 1px solid rgba(124,247,192,0.3);
+      background: linear-gradient(135deg, rgba(124,247,192,0.06) 0%, rgba(0,0,0,0.3) 100%);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .diag-badge {
+      border: 1px solid rgba(124,247,192,0.5);
+      border-radius: 12px;
+      padding: 2rem 1rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .diag-badge-num {
+      font-family: var(--font-head);
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #7cf7c0;
+      line-height: 1;
+      display: block;
+    }
+    .diag-badge-label {
+      font-size: 0.72rem;
+      color: rgba(124,247,192,0.7);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.4rem;
+      display: block;
+    }
+    .diag-title {
+      font-family: var(--font-head);
+      font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+    .diag-text {
+      font-size: 0.95rem;
+      color: var(--white-70);
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+    .diag-list {
+      list-style: none;
+      margin: 0 0 1.2rem 0;
+      padding: 0;
+    }
+    .diag-list li {
+      font-size: 0.95rem;
+      color: var(--white-70);
+      line-height: 1.7;
+      padding: 0.2rem 0 0.2rem 1.2rem;
+      position: relative;
+    }
+    .diag-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: #7cf7c0;
+      opacity: 0.7;
+    }
+    .diag-only {
+      font-size: 0.85rem;
+      color: #7cf7c0;
+      font-weight: 500;
+      margin-top: 1.5rem;
+      opacity: 0.9;
+    }
+
+    /* ── TG CHANNEL BUTTON (in bio) ── */
+    .tg-channel-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1.4rem;
+      padding: 0.55rem 1.1rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: var(--white-70);
+      font-size: 0.8rem;
+      font-family: var(--font-head);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .tg-channel-btn:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.38);
+      color: var(--white);
+    }
+    .footer-cta .tg-channel-btn {
+      padding: 1rem 2.5rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      border-color: rgba(255,255,255,0.3);
+      margin-top: 0;
+    }
+
+    /* ── FOUNDATION ── */
+    .foundation-body {
+      max-width: 820px;
+      margin-top: 2rem;
+    }
+    .foundation-text {
+      font-size: 0.97rem;
+      color: var(--white-70);
+      line-height: 1.8;
+      margin-bottom: 1.2rem;
+    }
+    .foundation-highlight {
+      font-family: var(--font-head);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--white);
+      line-height: 1.5;
+      border-left: 3px solid rgba(124,247,192,0.6);
+      padding-left: 1.2rem;
+      margin: 2rem 0;
+    }
+    .foundation-languages {
+      font-size: 0.88rem;
+      color: var(--white-40);
+      letter-spacing: 0.04em;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── PRICE + TELEGRAM ── */
+    .price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .price-block { display: flex; flex-direction: column; gap: 0.4rem; }
+    .price-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white-40);
+    }
+    .price-amount {
+      font-family: var(--font-head);
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .price-currency {
+      font-size: 0.5em;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+    .tg-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: #229ED9;
+      color: #fff;
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .tg-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(34,158,217,0.4);
+    }
+
+    /* ── CHECKOUT MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-box {
+      background: rgba(8,8,14,0.96);
+      border: 1px solid rgba(255,255,255,0.13);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 92vh;
+      overflow-y: auto;
+      position: relative;
+      transform: translateY(28px) scale(0.97);
+      transition: transform 0.38s cubic-bezier(0.34,1.45,0.64,1);
+      box-shadow: 0 48px 96px rgba(0,0,0,0.65);
+    }
+    .modal-overlay.open .modal-box {
+      transform: translateY(0) scale(1);
+    }
+    .modal-header {
+      padding: 1.8rem 2rem 1.3rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .modal-tag {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--white-40);
+      margin-bottom: 0.35rem;
+    }
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--white);
+    }
+    .modal-close {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--white-70);
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.95rem;
+      transition: background 0.2s, color 0.2s;
+      margin-top: 0.1rem;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.13); color: var(--white); }
+    .modal-order {
+      margin: 1.4rem 2rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 1.15rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .modal-product-name {
+      font-size: 0.9rem;
+      color: var(--white-70);
+      line-height: 1.45;
+    }
+    .modal-product-price {
+      font-family: var(--font-head);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--white);
+      white-space: nowrap;
+      letter-spacing: -0.02em;
+      flex-shrink: 0;
+    }
+    .modal-body { padding: 0 2rem 2rem; }
+    .modal-form { display: flex; flex-direction: column; gap: 1rem; }
+    .modal-field { display: flex; flex-direction: column; gap: 0.38rem; }
+    .modal-field label {
+      font-size: 0.75rem;
+      color: var(--white-40);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .modal-field input {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 0.85rem 1.1rem;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 0.97rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+    .modal-field input::placeholder { color: rgba(255,255,255,0.2); }
+    .modal-field input:focus {
+      border-color: rgba(255,255,255,0.32);
+      background: rgba(255,255,255,0.09);
+    }
+    .modal-field input.error { border-color: rgba(255,100,100,0.55); }
+    .modal-field .field-error {
+      font-size: 0.75rem;
+      color: rgba(255,140,140,0.9);
+      display: none;
+    }
+    .modal-field.has-error .field-error { display: block; }
+    .modal-submit {
+      margin-top: 0.65rem;
+      background: var(--white);
+      color: #000;
+      font-family: var(--font-head);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 1.05rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .modal-submit:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 32px rgba(255,255,255,0.2);
+    }
+    .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .modal-spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(0,0,0,0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: modalSpin 0.65s linear infinite;
+      display: none;
+    }
+    .modal-submit.loading .modal-spinner { display: block; }
+    .modal-submit.loading .submit-label { display: none; }
+    @keyframes modalSpin { to { transform: rotate(360deg); } }
+    .modal-success {
+      padding: 3rem 2rem 2.5rem;
+      text-align: center;
+      display: none;
+    }
+    .modal-success-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(124,247,192,0.1);
+      border: 1px solid rgba(124,247,192,0.4);
+      color: #7cf7c0;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    .modal-success h3 {
+      font-family: var(--font-head);
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .modal-success p { font-size: 0.9rem; color: var(--white-70); line-height: 1.6; }
+    .modal-redirect-note {
+      margin-top: 0.9rem;
+      font-size: 0.8rem;
+      color: var(--white-40);
+    }
+    @media (max-width: 500px) {
+      .modal-box { border-radius: 16px; }
+      .modal-header { padding: 1.4rem 1.25rem 1rem; }
+      .modal-order { margin: 1.1rem 1.25rem; }
+      .modal-body { padding: 0 1.25rem 1.5rem; }
+      .modal-success { padding: 2rem 1.25rem; }
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 860px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+
+      .hero { padding: 7rem 1.5rem 4rem; }
+      .features-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .feature-divider { display: none; }
+
+      .section { padding: 4rem 1.5rem; }
+      .intro-cols { grid-template-columns: 1fr; gap: 1.5rem; }
+      .quotes-grid { grid-template-columns: 1fr; }
+      .skill-row { grid-template-columns: 2.5rem 1fr; }
+      .skill-desc { display: none; }
+      .format-grid { grid-template-columns: 1fr; }
+      .offer-card { flex-direction: column; gap: 1.5rem; }
+      .instructors-grid { grid-template-columns: 1fr; }
+      .compare-cell, .compare-head-cell { padding: 0.9rem 1rem; font-size: 0.82rem; }
+      .site-footer { flex-direction: column; gap: 0.75rem; text-align: center; }
+      .diag-card { grid-template-columns: 1fr; gap: 1.5rem; padding: 2rem; }
+      .price-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── ANIMATED IMAGE BACKGROUND ── -->
+  <div id="bg-wrap">
+    <img id="bg-img" src="Image/otak-bg.jpeg" alt="" />
+    <div id="bg-overlay"></div>
+  </div>
+
+  <!-- ── NAV ── -->
+  <nav id="nav">
+    <span class="nav-logo">Мышление в эпоху ИИ</span>
+    <ul class="nav-links">
+      <li><a href="#about">О программе</a></li>
+      <li><a href="#skills">Навыки</a></li>
+      <li><a href="#instructors">Авторы</a></li>
+    </ul>
+    <a href="#" class="nav-cta open-modal">Записаться</a>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      1–22 июля · Онлайн
+    </div>
+
+    <h1 class="hero-title">
+      Мышление<br><span class="hero-title-sub">в эпоху ИИ</span>
+    </h1>
+
+    <p class="hero-sub">
+      Новые интеллектуальные навыки для мира, в котором искусственный интеллект умеет реализовать почти любую идею
+    </p>
+
+    <div class="hero-btns">
+      <a href="#" class="btn-primary open-modal">Записаться на программу</a>
+      <a href="#about" class="btn-secondary">Узнать больше</a>
+    </div>
+
+    <div class="features-card">
+      <div class="features-grid">
+        <div class="feature-item">4 онлайн встречи с Оскаром Бренифье</div>
+        <div class="feature-item">Живой формат на основе ваших ситуаций</div>
+        <div class="feature-item">Задания от Виктории Черненко</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INTRO ── -->
+  <section class="section section-dark" id="about">
+    <div class="section-inner">
+      <div class="section-label reveal">Контекст</div>
+      <p class="intro-quote reveal">
+        Главным ограничением становится уже не скорость исполнения —<br>
+        <em>а качество мышления.</em>
+      </p>
+      <div class="intro-cols">
+        <p class="reveal">
+          Еще недавно между идеей и ее реализацией были недели или месяцы. Этого времени хватало, чтобы передумать, проверить гипотезу, увидеть слабые места, отказаться от плохого решения.<br><br>
+          Сегодня искусственный интеллект сокращает этот промежуток до дней и часов.
+        </p>
+        <p class="reveal reveal-d1">
+          Главный вопрос уже не «как сделать?», а «что стоит делать?». В ближайшие годы разрыв между людьми будет определяться способностью использовать ИИ для усиления мышления, принятия решений и работы со сложностью.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── THREE QUOTES ── -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="quotes-grid">
+        <div class="quote-card reveal">
+          <span class="quote-num">01</span>
+          <p class="quote-text">Когда ответы становятся мгновенными, возрастает ценность суждения.</p>
+        </div>
+        <div class="quote-card reveal reveal-d1">
+          <span class="quote-num">02</span>
+          <p class="quote-text">Когда реализация становится дешевой, возрастает ценность выбора.</p>
+        </div>
+        <div class="quote-card reveal reveal-d2">
+          <span class="quote-num">03</span>
+          <p class="quote-text">Когда интеллект становится доступным каждому, возрастает ценность качества мышления.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SKILLS ── -->
+  <section class="section section-dark" id="skills">
+    <div class="section-inner">
+      <div class="section-label reveal">Компетенции</div>
+      <h2 class="section-title reveal">Навыки, которые становятся особенно важными</h2>
+      <div class="skills-list">
+        <div class="skill-row reveal">
+          <span class="skill-num">01</span>
+          <span class="skill-name">Метамышление</span>
+          <span class="skill-desc">Понимать, как формируются ваши выводы, убеждения и решения.</span>
+        </div>
+        <div class="skill-row reveal">
+          <span class="skill-num">02</span>
+          <span class="skill-name">Искусство вопроса</span>
+          <span class="skill-desc">Находить вопросы, которые позволяют увидеть ситуацию по-новому и расширяют пространство исследования.</span>
+        </div>
+        <div class="skill-row reveal">
+          <span class="skill-num">03</span>
+          <span class="skill-name">Критическое мышление</span>
+          <span class="skill-desc">Анализировать идеи, аргументы и предположения.</span>
+        </div>
+        <div class="skill-row reveal">
+          <span class="skill-num">04</span>
+          <span class="skill-name">Концептуальность</span>
+          <span class="skill-desc">Видеть общие принципы и структуры, концептуально формулировать свои запросы.</span>
+        </div>
+        <div class="skill-row reveal">
+          <span class="skill-num">05</span>
+          <span class="skill-name">Проблематизация</span>
+          <span class="skill-desc">Замечать скрытые предпосылки и исследовать очевидное.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BEFORE / AFTER ── -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-label reveal">Трансформация</div>
+      <h2 class="section-title reveal">До и после программы</h2>
+      <div class="compare-wrap reveal">
+        <div class="compare-head">
+          <div class="compare-head-cell before">До</div>
+          <div class="compare-head-cell after">После</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell before">ИИ дает вам ответы</div>
+          <div class="compare-cell after">ИИ помогает вам мыслить</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell before">Вы задаете вопросы, чтобы получить ответ</div>
+          <div class="compare-cell after">Вы задаете вопросы, чтобы исследовать ситуацию</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell before">Вы ищете решения</div>
+          <div class="compare-cell after">Вы исследуете проблему</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell before">Вы соглашаетесь с убедительными ответами</div>
+          <div class="compare-cell after">Вы проверяете предпосылки и аргументы</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell before">Вы тонете в возможностях</div>
+          <div class="compare-cell after">Вы видите главное</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-cell before">Вы опираетесь на информацию</div>
+          <div class="compare-cell after">Вы опираетесь на суждение</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FORMAT ── -->
+  <section class="section section-dark">
+    <div class="section-inner">
+      <div class="section-label reveal">Формат</div>
+      <h2 class="section-title reveal">Как устроена программа</h2>
+      <div class="format-grid">
+        <div class="format-card reveal">
+          <span class="format-num">01</span>
+          <div class="format-title">4 встречи с Бренифье</div>
+          <p class="format-desc">Онлайн-сессии с Оскаром Бренифье. Основной материал — реальные ситуации участников, разбор диалогов с ИИ.</p>
+        </div>
+        <div class="format-card reveal reveal-d1">
+          <span class="format-num">02</span>
+          <div class="format-title">Практика между встречами</div>
+          <p class="format-desc">Задания от Виктории Черненко. Используете ChatGPT и AI-инструменты в своей реальной работе и проектах.</p>
+        </div>
+        <div class="format-card reveal reveal-d2">
+          <span class="format-num">03</span>
+          <div class="format-title">Живой контент</div>
+          <p class="format-desc">Каждая встреча развивается вокруг ваших примеров — программа всегда актуальна и связана с задачами здесь и сейчас.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── DIAGNOSTIC ── -->
+  <section class="section diag-section">
+    <div class="section-inner">
+      <div class="diag-card reveal">
+        <div class="diag-badge reveal">
+          <span class="diag-badge-num">20</span>
+          <span class="diag-badge-label">участников</span>
+        </div>
+        <div class="diag-content">
+          <h2 class="diag-title reveal">Диагностика качества взаимодействия с ИИ</h2>
+          <p class="diag-text reveal">Мы проанализируем ваши реальные диалоги с ChatGPT или другими нейросетями.<br>
+          Вы получите карту своих сильных и слабых сторон.</p>
+          <p class="diag-text reveal">Она покажет:</p>
+          <ul class="diag-list reveal">
+            <li>как вы принимаете решения;</li>
+            <li>каким ответам доверяете слишком быстро;</li>
+            <li>качество ваших вопросов и/или промптов;</li>
+            <li>качество вашего метамышления</li>
+          </ul>
+          <p class="diag-text reveal">ИИ — зеркало, которое помогает увидеть привычные способы рассуждения, сильные стороны и интеллектуальные слепые зоны. То, что большинство людей не замечает самостоятельно.</p>
+          <p class="diag-only reveal">* Только для первых 20 участников</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INSTRUCTORS ── -->
+  <section class="section" id="instructors">
+    <div class="section-inner">
+      <div class="section-label reveal">Авторы</div>
+      <div class="instructors-grid">
+        <div class="instructor-card reveal">
+          <img src="Image/Viktoriia Chernenko.WEBP" alt="Виктория Черненко" class="instructor-photo" onerror="this.style.display='none'" />
+          <div class="instructor-body">
+            <div class="instructor-name">Виктория Черненко</div>
+            <div class="instructor-role">Философский консультант · Основатель ITD</div>
+            <p class="instructor-bio">
+              Магистр культурно-исторической психологии (РГГУ), аспирант Сорбонны. Более 16 лет занимается философским консультированием, ведёт образовательные программы, семинары и индивидуальные сессии в разных странах мира.<br><br>
+              Последние несколько лет исследует, как искусственный интеллект меняет мышление, обучение и принятие решений. Активно использует нейросети для анализа сложных вопросов, развития метамышления, саморефлексии и интеллектуальной работы.<br><br>
+              Основатель компании ITD. Автор, редактор и переводчик.
+            </p>
+            <a href="https://t.me/viktoriachernenko" class="tg-channel-btn" target="_blank">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.26 13.835l-2.956-.924c-.642-.204-.657-.642.136-.953l11.57-4.461c.537-.194 1.006.131.884.724z"/></svg>
+              ТГ канал
+            </a>
+          </div>
+        </div>
+        <div class="instructor-card reveal reveal-d1">
+          <img src="Image/OSCAR.JPG" alt="Оскар Бренифье" class="instructor-photo" onerror="this.style.display='none'" />
+          <div class="instructor-body">
+            <div class="instructor-name">Оскар Бренифье</div>
+            <div class="instructor-role">PhD по философии (Сорбонна) · Институт практической философии, Париж</div>
+            <p class="instructor-bio">
+              PhD по философии (Сорбонна), основатель Института практической философии в Париже. Более 40 лет помогает людям развивать мышление через философский диалог и сократический метод.<br><br>
+              Проводил семинары и образовательные проекты более чем в 50 странах мира, сотрудничал с ЮНЕСКО и международными организациями. Автор более 60 книг, переведенных на десятки языков.<br><br>
+              В последние годы активно исследует возможности искусственного интеллекта как партнера по мышлению. Использует диалог с нейросетями для анализа идей, проверки аргументов, поиска скрытых предпосылок и развития критического мышления.
+            </p>
+            <a href="https://t.me/oscarbrenifier" class="tg-channel-btn" target="_blank">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.26 13.835l-2.956-.924c-.642-.204-.657-.642.136-.953l11.57-4.461c.537-.194 1.006.131.884.724z"/></svg>
+              ТГ канал
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOUNDATION ── -->
+  <section class="section section-dark">
+    <div class="section-inner">
+      <div class="section-label reveal">Основа программы</div>
+      <h2 class="section-title reveal">На чем основана программа</h2>
+      <div class="foundation-body">
+        <p class="foundation-text reveal">Программа построена вокруг практики философского диалога, которую Оскар Бренифье развивает более 40 лет.</p>
+        <p class="foundation-text reveal">В последние годы одним из направлений этого исследования стало взаимодействие человека и искусственного интеллекта.</p>
+        <p class="foundation-text reveal">Также мы опираемся на современные исследования влияния искусственного интеллекта на мышление, принятие решений, креативность и профессиональную деятельность. Среди них работы Microsoft Research, World Economic Forum, Harvard Business School, Anthropic, OECD, NBER и других исследовательских центров последних лет.</p>
+        <p class="foundation-text reveal">Эти исследования показывают общий тренд: по мере того как искусственный интеллект становится доступнее, все большую ценность приобретают способность мыслить, формулировать задачи, оценивать результаты и принимать самостоятельные решения.</p>
+        <p class="foundation-highlight reveal">Когда интеллект становится дешевым, главным преимуществом постепенно становится качество мышления.</p>
+        <p class="foundation-languages reveal">Программа пройдет на русском, английском, испанском и китайском языках</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WHO FOR ── -->
+  <section class="section section-dark">
+    <div class="section-inner">
+      <div class="section-label reveal">Для кого</div>
+      <h2 class="section-title reveal">Программа подходит</h2>
+      <ul class="for-list">
+        <li class="for-item reveal"><span class="for-arrow">→</span> Для предпринимателей, руководителей, консультантов, исследователей и специалистов интеллектуального труда.</li>
+        <li class="for-item reveal"><span class="for-arrow">→</span> Для тех, кто принимает решения, работает со сложностью и управляет командами.</li>
+        <li class="for-item reveal"><span class="for-arrow">→</span> Для тех, кто уже использует ИИ или только начинает с ним работать.</li>
+        <li class="for-item reveal"><span class="for-arrow">→</span> Для тех, кто хочет сохранить самостоятельность мышления в мире мгновенных ответов.</li>
+        <li class="for-item reveal"><span class="for-arrow">→</span> Для тех, кто хочет использовать ИИ как инструмент исследования и саморефлексии.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── PRICE ── -->
+  <section class="section section-dark">
+    <div class="section-inner price-row">
+      <div class="price-block reveal">
+        <div class="price-label">Стоимость участия</div>
+        <div class="price-amount">28 000 <span class="price-currency">руб.</span></div>
+      </div>
+      <a href="#" class="btn-primary reveal open-modal">Записаться на программу</a>
+    </div>
+  </section>
+
+  <!-- ── FOOTER CTA ── -->
+  <section class="footer-cta" id="register">
+    <div class="footer-cta-inner">
+      <div class="section-label reveal" style="justify-content:center;text-align:center;margin-bottom:2rem;">Записаться</div>
+      <p class="footer-quote reveal">
+        В мире, где доступ к информации становится универсальным, качество мышления превращается в одно из самых сильных конкурентных преимуществ.
+      </p>
+      <a href="https://t.me/anna" class="tg-channel-btn reveal reveal-d1" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.26 13.835l-2.956-.924c-.642-.204-.657-.642.136-.953l11.57-4.461c.537-.194 1.006.131.884.724z"/></svg>
+        Связаться с нами
+      </a>
+    </div>
+  </section>
+
+  <!-- ── SITE FOOTER ── -->
+  <footer class="site-footer">
+    <span>Мышление в эпоху ИИ</span>
+    <span>1–22 июля · Онлайн</span>
+  </footer>
+
+  <!-- ── CHECKOUT MODAL ── -->
+  <div class="modal-overlay" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box" id="modalBox">
+
+      <div class="modal-header">
+        <div>
+          <div class="modal-tag">Оформление заявки</div>
+          <div class="modal-title" id="modalTitle">Ваш заказ</div>
+        </div>
+        <button class="modal-close" id="modalClose" aria-label="Закрыть">✕</button>
+      </div>
+
+      <div class="modal-order">
+        <div class="modal-product-name">
+          Мышление в эпоху ИИ<br>
+          <span style="font-size:0.8em;color:var(--white-40);">1–22 июля · Онлайн</span>
+        </div>
+        <div class="modal-product-price">28 000 руб.</div>
+      </div>
+
+      <div class="modal-body" id="modalFormState">
+        <form class="modal-form" id="checkoutForm" novalidate>
+          <div class="modal-field" id="fieldName">
+            <label for="inputName">Ваше имя</label>
+            <input type="text" id="inputName" name="name" placeholder="Иван Иванов" autocomplete="name" />
+            <span class="field-error">Пожалуйста, введите ваше имя</span>
+          </div>
+          <div class="modal-field" id="fieldEmail">
+            <label for="inputEmail">Ваш Email</label>
+            <input type="email" id="inputEmail" name="email" placeholder="ivan@example.com" autocomplete="email" />
+            <span class="field-error">Пожалуйста, введите корректный email</span>
+          </div>
+          <div class="modal-field" id="fieldPhone">
+            <label for="inputPhone">Ваш телефон</label>
+            <input type="tel" id="inputPhone" name="phone" placeholder="+7 (999) 000-00-00" autocomplete="tel" />
+            <span class="field-error">Пожалуйста, введите ваш телефон</span>
+          </div>
+          <div class="modal-field" id="fieldTelegram">
+            <label for="inputTelegram">Ваш Телеграм ник</label>
+            <input type="text" id="inputTelegram" name="telegram" placeholder="@username" autocomplete="off" />
+            <span class="field-error">Пожалуйста, введите ваш Телеграм ник</span>
+          </div>
+          <button type="submit" class="modal-submit" id="modalSubmit">
+            <div class="modal-spinner"></div>
+            <span class="submit-label">Купить</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="modal-success" id="modalSuccess">
+        <div class="modal-success-icon">✓</div>
+        <h3>Заявка принята!</h3>
+        <p>Ваши данные отправлены. Перенаправляем вас на страницу оплаты…</p>
+        <p class="modal-redirect-note" id="redirectCountdown"></p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── NAV SCROLL ──
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── SCROLL REVEAL ──
+    const revealObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+    // ── CHECKOUT MODAL ──
+    const PAYMENT_URL = 'https://PAYMENT-LINK-HERE';
+    const FORMSUBMIT_URL = 'https://formsubmit.co/ajax/itd.philomind@gmail.com';
+
+    const checkoutModal  = document.getElementById('checkoutModal');
+    const modalClose     = document.getElementById('modalClose');
+    const checkoutForm   = document.getElementById('checkoutForm');
+    const modalSubmit    = document.getElementById('modalSubmit');
+    const modalFormState = document.getElementById('modalFormState');
+    const modalSuccess   = document.getElementById('modalSuccess');
+    const redirectNote   = document.getElementById('redirectCountdown');
+
+    function openModal() {
+      checkoutModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('inputName').focus(), 100);
+    }
+
+    function closeModal() {
+      checkoutModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.open-modal').forEach(btn => {
+      btn.addEventListener('click', e => { e.preventDefault(); openModal(); });
+    });
+
+    checkoutModal.addEventListener('click', e => {
+      if (e.target === checkoutModal) closeModal();
+    });
+    modalClose.addEventListener('click', closeModal);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && checkoutModal.classList.contains('open')) closeModal();
+    });
+
+    function setFieldError(id, hasError) {
+      const el = document.getElementById(id);
+      el.classList.toggle('has-error', hasError);
+      el.querySelector('input').classList.toggle('error', hasError);
+    }
+
+    function isValidEmail(v) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    }
+
+    checkoutForm.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const name     = document.getElementById('inputName').value.trim();
+      const email    = document.getElementById('inputEmail').value.trim();
+      const phone    = document.getElementById('inputPhone').value.trim();
+      const telegram = document.getElementById('inputTelegram').value.trim();
+
+      let valid = true;
+      if (!name)               { setFieldError('fieldName',     true); valid = false; } else setFieldError('fieldName',     false);
+      if (!isValidEmail(email)) { setFieldError('fieldEmail',    true); valid = false; } else setFieldError('fieldEmail',    false);
+      if (!phone)              { setFieldError('fieldPhone',    true); valid = false; } else setFieldError('fieldPhone',    false);
+      if (!telegram)           { setFieldError('fieldTelegram', true); valid = false; } else setFieldError('fieldTelegram', false);
+      if (!valid) return;
+
+      modalSubmit.classList.add('loading');
+      modalSubmit.disabled = true;
+
+      try {
+        await fetch(FORMSUBMIT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            'Программа': 'Мышление в эпоху ИИ',
+            'Стоимость': '28 000 руб.',
+            'Имя': name,
+            'Email': email,
+            'Телефон': phone,
+            'Телеграм': telegram,
+            '_subject': 'Новая заявка — Мышление в эпоху ИИ',
+            '_captcha': 'false'
+          })
+        });
+      } catch (_) { /* proceed to redirect even on network error */ }
+
+      modalFormState.style.display = 'none';
+      modalSuccess.style.display = 'block';
+
+      let secs = 4;
+      redirectNote.textContent = `Перенаправление через ${secs} сек…`;
+      const tick = setInterval(() => {
+        secs--;
+        if (secs <= 0) {
+          clearInterval(tick);
+          window.location.href = PAYMENT_URL;
+        } else {
+          redirectNote.textContent = `Перенаправление через ${secs} сек…`;
+        }
+      }, 1000);
+    });
+  </script>
+
+</body>
+</html>

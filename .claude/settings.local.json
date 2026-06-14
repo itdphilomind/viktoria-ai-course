@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open \"/Users/nawirsurf/viktoria Demo 1/index.html\")",
+      "Bash(open \"/Users/nawirsurf/viktoria Demo 1/style2.html\")",
+      "Bash(open \"/Users/nawirsurf/viktoria Demo 3/index.html\")"
+    ]
+  }
+}

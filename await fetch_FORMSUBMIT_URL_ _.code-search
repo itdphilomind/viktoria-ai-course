@@ -1,0 +1,9 @@
+# Query: await fetch(FORMSUBMIT_URL, {
+# ContextLines: 1
+
+1 result - 1 file
+
+index.html:
+  1513        try {
+  1514:         await fetch(FORMSUBMIT_URL, {
+  1515            method: 'POST',

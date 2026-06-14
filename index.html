@@ -1010,6 +1010,18 @@
       font-size: 0.8rem;
       color: var(--white-40);
     }
+    .modal-submit-error {
+      margin-top: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255,80,80,0.1);
+      border: 1px solid rgba(255,80,80,0.35);
+      border-radius: 8px;
+      font-size: 0.83rem;
+      color: rgba(255,160,160,0.95);
+      text-align: center;
+      display: none;
+    }
+    .modal-submit-error.visible { display: block; }
     @media (max-width: 500px) {
       .modal-box { border-radius: 16px; }
       .modal-header { padding: 1.4rem 1.25rem 1rem; }
@@ -1414,6 +1426,9 @@
             <input type="text" id="inputTelegram" name="telegram" placeholder="@username" autocomplete="off" />
             <span class="field-error">Пожалуйста, введите ваш Телеграм ник</span>
           </div>
+          <div class="modal-submit-error" id="submitError">
+            Не удалось отправить заявку. Пожалуйста, попробуйте ещё раз.
+          </div>
           <button type="submit" class="modal-submit" id="modalSubmit">
             <div class="modal-spinner"></div>
             <span class="submit-label">Купить</span>
@@ -1492,6 +1507,8 @@
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
     }
 
+    const submitError = document.getElementById('submitError');
+
     checkoutForm.addEventListener('submit', async e => {
       e.preventDefault();
 
@@ -1501,17 +1518,21 @@
       const telegram = document.getElementById('inputTelegram').value.trim();
 
       let valid = true;
-      if (!name)               { setFieldError('fieldName',     true); valid = false; } else setFieldError('fieldName',     false);
+      if (!name)                { setFieldError('fieldName',     true); valid = false; } else setFieldError('fieldName',     false);
       if (!isValidEmail(email)) { setFieldError('fieldEmail',    true); valid = false; } else setFieldError('fieldEmail',    false);
-      if (!phone)              { setFieldError('fieldPhone',    true); valid = false; } else setFieldError('fieldPhone',    false);
-      if (!telegram)           { setFieldError('fieldTelegram', true); valid = false; } else setFieldError('fieldTelegram', false);
+      if (!phone)               { setFieldError('fieldPhone',    true); valid = false; } else setFieldError('fieldPhone',    false);
+      if (!telegram)            { setFieldError('fieldTelegram', true); valid = false; } else setFieldError('fieldTelegram', false);
       if (!valid) return;
 
+      submitError.classList.remove('visible');
       modalSubmit.classList.add('loading');
       modalSubmit.disabled = true;
 
+      console.log('Submitting form...');
+
+      let success = false;
       try {
-        await fetch(FORMSUBMIT_URL, {
+        const response = await fetch(FORMSUBMIT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({
@@ -1525,7 +1546,25 @@
             '_captcha': 'false'
           })
         });
-      } catch (_) { /* proceed to redirect even on network error */ }
+
+        console.log('FormSubmit response:', response);
+
+        if (response.ok) {
+          success = true;
+        } else {
+          console.error('FormSubmit error status:', response.status, response.statusText);
+        }
+      } catch (err) {
+        console.error('FormSubmit network error:', err);
+      }
+
+      modalSubmit.classList.remove('loading');
+      modalSubmit.disabled = false;
+
+      if (!success) {
+        submitError.classList.add('visible');
+        return;
+      }
 
       modalFormState.style.display = 'none';
       modalSuccess.style.display = 'block';

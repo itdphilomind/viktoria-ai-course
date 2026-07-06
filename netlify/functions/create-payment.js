@@ -37,17 +37,21 @@ exports.handler = async (event) => {
     };
   }
 
+  const siteUrl = process.env.SITE_URL || 'https://philosophy-ai.netlify.app';
   const orderId = `itd-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const amount  = 2800000; // 28 000 RUB in kopecks
 
   // T-Bank token: sort all param keys alphabetically (excl. DATA/Receipt/Token),
   // include Password, concatenate values, SHA-256.
   const tokenParams = {
-    Amount:      String(amount),
-    Description: 'Мышление в эпоху ИИ',
-    OrderId:     orderId,
-    Password:    password,
-    TerminalKey: terminalKey,
+    Amount:          String(amount),
+    Description:     'Мышление в эпоху ИИ',
+    FailURL:         `${siteUrl}/failed.html?orderId=${orderId}`,
+    NotificationURL: `${siteUrl}/.netlify/functions/payment-webhook`,
+    OrderId:         orderId,
+    Password:        password,
+    SuccessURL:      `${siteUrl}/success.html?orderId=${orderId}`,
+    TerminalKey:     terminalKey,
   };
   const tokenStr = Object.keys(tokenParams)
     .sort()
@@ -56,10 +60,13 @@ exports.handler = async (event) => {
   const token = crypto.createHash('sha256').update(tokenStr).digest('hex');
 
   const payload = {
-    TerminalKey: terminalKey,
-    Amount:      amount,
-    OrderId:     orderId,
-    Description: 'Мышление в эпоху ИИ',
+    TerminalKey:     terminalKey,
+    Amount:          amount,
+    OrderId:         orderId,
+    Description:     'Мышление в эпоху ИИ',
+    SuccessURL:      `${siteUrl}/success.html?orderId=${orderId}`,
+    FailURL:         `${siteUrl}/failed.html?orderId=${orderId}`,
+    NotificationURL: `${siteUrl}/.netlify/functions/payment-webhook`,
     DATA: {
       Name:     name,
       Email:    email,

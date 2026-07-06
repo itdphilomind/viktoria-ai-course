@@ -3,7 +3,11 @@
     "allow": [
       "Bash(open \"/Users/nawirsurf/viktoria Demo 1/index.html\")",
       "Bash(open \"/Users/nawirsurf/viktoria Demo 1/style2.html\")",
-      "Bash(open \"/Users/nawirsurf/viktoria Demo 3/index.html\")"
+      "Bash(open \"/Users/nawirsurf/viktoria Demo 3/index.html\")",
+      "WebFetch(domain:www.tbank.ru)",
+      "WebSearch",
+      "WebFetch(domain:developer.tbank.ru)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

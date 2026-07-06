@@ -39,14 +39,7 @@ exports.handler = async (event) => {
 
   const siteUrl = process.env.SITE_URL || 'https://philosophy-ai.netlify.app';
   const orderId = `itd-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  // =====================================================
-  // TEST MODE ONLY
-  // Temporary amount for payment testing.
-  // 500 RUB = 50,000 kopecks.
-  // Before production, restore to:
-  // const amount = 2800000;
-  // =====================================================
-  const amount  = 50000; // 500 RUB (50,000 kopecks)
+  const amount  = 2800000; // 28 000 RUB in kopecks
 
   // T-Bank token: sort all param keys alphabetically (excl. DATA/Receipt/Token),
   // include Password, concatenate values, SHA-256.

@@ -1463,9 +1463,6 @@
     document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
     // ── CHECKOUT MODAL ──
-    const PAYMENT_URL = 'https://PAYMENT-LINK-HERE';
-    const FORMSUBMIT_URL = 'https://formsubmit.co/ajax/itd.philomind@gmail.com';
-
     const checkoutModal  = document.getElementById('checkoutModal');
     const modalClose     = document.getElementById('modalClose');
     const checkoutForm   = document.getElementById('checkoutForm');
@@ -1528,40 +1525,29 @@
       modalSubmit.classList.add('loading');
       modalSubmit.disabled = true;
 
-      console.log('Submitting form...');
-
-      let success = false;
+      let paymentUrl = null;
       try {
-        const response = await fetch(FORMSUBMIT_URL, {
+        const response = await fetch('/.netlify/functions/create-payment', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            'Программа': 'Мышление в эпоху ИИ',
-            'Стоимость': '28 000 руб.',
-            'Имя': name,
-            'Email': email,
-            'Телефон': phone,
-            'Телеграм': telegram,
-            '_subject': 'Новая заявка — Мышление в эпоху ИИ',
-            '_captcha': 'false'
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, telegram }),
         });
 
-        console.log('FormSubmit response:', response);
+        const data = await response.json();
 
-        if (response.ok) {
-          success = true;
+        if (response.ok && data.paymentUrl) {
+          paymentUrl = data.paymentUrl;
         } else {
-          console.error('FormSubmit error status:', response.status, response.statusText);
+          console.error('Payment init error:', data.error);
         }
       } catch (err) {
-        console.error('FormSubmit network error:', err);
+        console.error('Payment fetch error:', err);
       }
 
       modalSubmit.classList.remove('loading');
       modalSubmit.disabled = false;
 
-      if (!success) {
+      if (!paymentUrl) {
         submitError.classList.add('visible');
         return;
       }
@@ -1569,13 +1555,13 @@
       modalFormState.style.display = 'none';
       modalSuccess.style.display = 'block';
 
-      let secs = 4;
+      let secs = 3;
       redirectNote.textContent = `Перенаправление через ${secs} сек…`;
       const tick = setInterval(() => {
         secs--;
         if (secs <= 0) {
           clearInterval(tick);
-          window.location.href = PAYMENT_URL;
+          window.location.href = paymentUrl;
         } else {
           redirectNote.textContent = `Перенаправление через ${secs} сек…`;
         }

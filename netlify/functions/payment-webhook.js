@@ -198,6 +198,32 @@ https://t.me/+inJ2IYxm9Fs4NTli
                   // duplicate — acceptable rare edge case vs losing the confirmation permanently.
                   console.error('payment-webhook: blob "sent" write failed after email delivery', { OrderId, err: blobErr.message });
                 }
+
+                // Admin notification — secondary, sent only after blob is marked "sent".
+                // Failure is logged only; never affects blob state or T-Bank response.
+                try {
+                  const adminRes = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${resendKey}`,
+                    },
+                    body: JSON.stringify({
+                      from: emailFrom,
+                      to: 'itd.philomind@gmail.com',
+                      subject: `New paid course order - ${buyerData.name}`,
+                      text: `New paid order:\n\nOrderId: ${OrderId}\nPaymentId: ${PaymentId}\nStatus: ${Status}\nAmount: ${Amount}\n\nName: ${buyerData.name}\nEmail: ${buyerData.email}\nPhone: ${buyerData.phone}\nTelegram: ${buyerData.telegram}\ncreatedAt: ${buyerData.createdAt}`,
+                    }),
+                  });
+                  if (adminRes.ok) {
+                    console.log('payment-webhook: admin notification sent', { OrderId });
+                  } else {
+                    const errBody = await adminRes.text();
+                    console.error('payment-webhook: admin notification failed', { OrderId, status: adminRes.status, errBody });
+                  }
+                } catch (err) {
+                  console.error('payment-webhook: admin notification error', { OrderId, err: err.message });
+                }
               }
             }
           }

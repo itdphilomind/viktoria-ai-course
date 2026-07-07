@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { getStore } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -40,6 +41,8 @@ exports.handler = async (event) => {
   const siteUrl = process.env.SITE_URL || 'https://philosophy-ai.netlify.app';
   const orderId = `itd-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const amount  = 50000; // TEST ONLY: 500 RUB = 50,000 kopecks
+  const maskedEmail = email.replace(/^(.{1}).+(@.+)$/, '$1***$2');
+  console.log(`create-payment:\nOrderId: ${orderId}\nBuyer: ${maskedEmail}`);
 
   // T-Bank token: sort all param keys alphabetically (excl. DATA/Receipt/Token),
   // include Password, concatenate values, SHA-256.
@@ -86,6 +89,28 @@ exports.handler = async (event) => {
     const result = await tRes.json();
 
     if (result.Success && result.PaymentURL) {
+      // Store buyer data so the webhook can retrieve it later.
+      // T-Bank does not echo DATA back in webhook notifications.
+      try {
+        const store = getStore('payment-buyers');
+        await store.setJSON(orderId, {
+          name,
+          email,
+          phone,
+          telegram,
+          amount,
+          createdAt:      new Date().toISOString(),
+          emailStatus:    null,
+          emailSendingAt: null,
+        }, { ttl: 604800 }); // 7 days
+        console.log('create-payment: Blob saved successfully');
+      } catch (blobErr) {
+        // Blob write failure is non-fatal: log and continue.
+        // The webhook will find no blob and skip the email rather than crash.
+        console.error('create-payment: blob write failed', { orderId, err: blobErr.message });
+        console.log(`create-payment:\nBlob write failed: ${blobErr.message}`);
+      }
+
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },

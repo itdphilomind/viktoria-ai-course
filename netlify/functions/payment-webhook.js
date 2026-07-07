@@ -5,12 +5,44 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  // ── DEBUG: log raw body before parsing ──
+  try {
+    console.log('payment-webhook [debug] raw body type:', typeof event.body);
+    console.log('payment-webhook [debug] raw body (first 1000 chars):',
+      String(event.body ?? '').slice(0, 1000));
+  } catch (e) { /* ignore logging errors */ }
+
   let body;
   try {
     body = JSON.parse(event.body);
   } catch {
     return { statusCode: 400, body: 'Invalid JSON' };
   }
+
+  // ── DEBUG: log parsed field summary ──
+  try {
+    console.log('payment-webhook [debug] parsed keys:', JSON.stringify(Object.keys(body)));
+    console.log('payment-webhook [debug] DATA exists:', 'DATA' in body);
+    console.log('payment-webhook [debug] DATA type:', typeof body.DATA);
+    console.log('payment-webhook [debug] DATA raw:',
+      body.DATA !== undefined ? String(body.DATA).slice(0, 500) : 'NOT PRESENT');
+    console.log('payment-webhook [debug] Receipt exists:', 'Receipt' in body);
+    console.log('payment-webhook [debug] CustomerKey exists:', 'CustomerKey' in body);
+  } catch (e) { console.error('payment-webhook [debug] field summary error:', e.message); }
+
+  // ── DEBUG: check DATA.Email ──
+  try {
+    if (body.DATA) {
+      const parsed = typeof body.DATA === 'string' ? JSON.parse(body.DATA) : body.DATA;
+      console.log('payment-webhook [debug] DATA.Email exists:', !!parsed?.Email);
+      if (parsed?.Email) {
+        console.log('payment-webhook [debug] DATA.Email masked:',
+          String(parsed.Email).replace(/^(.{2}).+(@.+)$/, '$1***$2'));
+      }
+    } else {
+      console.log('payment-webhook [debug] DATA.Email exists: false (DATA not present)');
+    }
+  } catch (e) { console.error('payment-webhook [debug] DATA parse error:', e.message); }
 
   const password    = process.env.TBANK_PASSWORD;
   const terminalKey = process.env.TBANK_TERMINAL_KEY;

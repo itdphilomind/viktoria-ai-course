@@ -170,6 +170,10 @@ https://t.me/+inJ2IYxm9Fs4NTli
                 // Admin notification — secondary, sent only after blob is marked "sent".
                 // Failure is logged only; never affects blob state or T-Bank response.
                 try {
+                  const amountRub = (Number(Amount) / 100).toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  });
                   const adminRes = await fetch('https://api.resend.com/emails', {
                     method: 'POST',
                     headers: {
@@ -180,7 +184,7 @@ https://t.me/+inJ2IYxm9Fs4NTli
                       from: emailFrom,
                       to: 'itd.philomind@gmail.com',
                       subject: `New paid course order - ${buyerData.name}`,
-                      text: `New paid order:\n\nOrderId: ${OrderId}\nPaymentId: ${PaymentId}\nStatus: ${Status}\nAmount: ${Amount}\n\nName: ${buyerData.name}\nEmail: ${buyerData.email}\nPhone: ${buyerData.phone}\nTelegram: ${buyerData.telegram}\ncreatedAt: ${buyerData.createdAt}`,
+                      text: `New paid order:\n\nOrderId: ${OrderId}\nPaymentId: ${PaymentId}\nStatus: ${Status}\nAmount: ${amountRub} RUB\n\nName: ${buyerData.name}\nEmail: ${buyerData.email}\nPhone: ${buyerData.phone}\nTelegram: ${buyerData.telegram}\ncreatedAt: ${buyerData.createdAt}`,
                     }),
                   });
                   if (adminRes.ok) {

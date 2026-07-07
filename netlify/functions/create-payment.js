@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -40,7 +40,7 @@ exports.handler = async (event) => {
 
   const siteUrl = process.env.SITE_URL || 'https://philosophy-ai.netlify.app';
   const orderId = `itd-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  const amount  = 50000; // TEST ONLY: 500 RUB = 50,000 kopecks
+  const amount  = 100; // TEST ONLY: 1 RUB = 100 kopecks
   const maskedEmail = email.replace(/^(.{1}).+(@.+)$/, '$1***$2');
   console.log(`create-payment:\nOrderId: ${orderId}\nBuyer: ${maskedEmail}`);
 
@@ -92,6 +92,7 @@ exports.handler = async (event) => {
       // Store buyer data so the webhook can retrieve it later.
       // T-Bank does not echo DATA back in webhook notifications.
       try {
+        connectLambda(event);
         const store = getStore('payment-buyers');
         await store.setJSON(orderId, {
           name,

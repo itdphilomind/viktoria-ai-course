@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { getStore } = require('@netlify/blobs');
+const { getStore, connectLambda } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -93,6 +93,7 @@ exports.handler = async (event) => {
       console.error('payment-webhook: missing RESEND_API_KEY or EMAIL_FROM env vars', { OrderId });
     } else {
       try {
+        connectLambda(event);
         const store = getStore('payment-buyers');
         const result = await store.getWithMetadata(OrderId, { type: 'json' });
 

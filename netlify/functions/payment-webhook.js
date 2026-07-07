@@ -33,7 +33,7 @@ exports.handler = async (event) => {
   // - Sort all keys alphabetically
   // - Concatenate string values
   // - SHA-256 must equal Token
-  const { Token: receivedToken, ...fields } = body;
+  const { Token: receivedToken, DATA: _data, Receipt: _receipt, ...fields } = body;
   const tokenParams = { ...fields, Password: password };
 
   const tokenStr = Object.keys(tokenParams)

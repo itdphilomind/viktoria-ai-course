@@ -40,7 +40,7 @@ exports.handler = async (event) => {
 
   const siteUrl = process.env.SITE_URL || 'https://philosophy-ai.netlify.app';
   const orderId = `itd-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  const amount  = 2800000; // 28,000 RUB = 2,800,000 kopecks
+  const amount  = 100; // TEST ONLY: 1 RUB = 100 kopecks
   const maskedEmail = email.replace(/^(.{1}).+(@.+)$/, '$1***$2');
   console.log(`create-payment:\nOrderId: ${orderId}\nBuyer: ${maskedEmail}`);
 

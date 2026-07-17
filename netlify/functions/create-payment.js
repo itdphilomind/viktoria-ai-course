@@ -1,6 +1,82 @@
 const crypto = require('crypto');
 const { getStore, connectLambda } = require('@netlify/blobs');
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeEmailHeader(value) {
+  return String(value).replace(/[\r\n]+/g, ' ').trim();
+}
+
+async function sendFormSubmissionEmail({ orderId, name, email, phone, telegram, amount, submittedAt }) {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey) {
+    console.error('create-payment: RESEND_API_KEY missing — skipping form notification', { orderId });
+    return;
+  }
+
+  const subjectName = sanitizeEmailHeader(name);
+  const n      = escapeHtml(name);
+  const e      = escapeHtml(email);
+  const p      = escapeHtml(phone);
+  const tg     = escapeHtml(telegram);
+  const oid    = escapeHtml(orderId);
+  const amountRub = (Number(amount) / 100).toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+
+  const html = `<!DOCTYPE html>
+<html>
+<body style="font-family:Arial,sans-serif;color:#222;max-width:560px;margin:0 auto;padding:24px;">
+  <h2 style="margin-top:0;">New form submission</h2>
+  <p style="color:#c00;font-weight:bold;">Payment not yet confirmed</p>
+  <table style="border-collapse:collapse;width:100%;">
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;width:140px;">Name</td><td style="padding:8px 12px;border:1px solid #ddd;">${n}</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Email</td><td style="padding:8px 12px;border:1px solid #ddd;">${e}</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Phone</td><td style="padding:8px 12px;border:1px solid #ddd;">${p}</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Telegram</td><td style="padding:8px 12px;border:1px solid #ddd;">${tg}</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Order ID</td><td style="padding:8px 12px;border:1px solid #ddd;">${oid}</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Amount</td><td style="padding:8px 12px;border:1px solid #ddd;">${amountRub} RUB</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Submitted at</td><td style="padding:8px 12px;border:1px solid #ddd;">${submittedAt}</td></tr>
+    <tr><td style="padding:8px 12px;border:1px solid #ddd;font-weight:bold;background:#f5f5f5;">Status</td><td style="padding:8px 12px;border:1px solid #ddd;color:#c00;font-weight:bold;">Form submitted — payment not confirmed</td></tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${resendKey}`,
+      },
+      body: JSON.stringify({
+        from:    'Philomind AI Team <noreply@philomind-ai.com>',
+        to:      'itd.philomind@gmail.com',
+        subject: `New form submission — ${subjectName} — payment not confirmed`,
+        html,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      console.log('create-payment: form notification sent', { orderId, resendId: data.id });
+    } else {
+      const errText = await res.text();
+      console.error('create-payment: form notification failed', { orderId, status: res.status, body: errText.slice(0, 200) });
+    }
+  } catch (err) {
+    console.error('create-payment: form notification error', { orderId, err: err.message });
+  }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -78,6 +154,16 @@ exports.handler = async (event) => {
     },
     Token: token,
   };
+
+  await sendFormSubmissionEmail({
+    orderId,
+    name,
+    email,
+    phone,
+    telegram,
+    amount,
+    submittedAt: new Date().toISOString(),
+  });
 
   try {
     const tRes = await fetch('https://securepay.tinkoff.ru/v2/Init', {

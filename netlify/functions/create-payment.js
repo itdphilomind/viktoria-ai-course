@@ -1,4 +1,8 @@
 const crypto = require('crypto');
+const fs     = require('fs');
+const path   = require('path');
+const https  = require('https');
+const tls    = require('tls');
 const { getStore, connectLambda } = require('@netlify/blobs');
 
 function escapeHtml(str) {
@@ -75,6 +79,48 @@ async function sendFormSubmissionEmail({ orderId, name, email, phone, telegram, 
   } catch (err) {
     console.error('create-payment: form notification error', { orderId, err: err.message });
   }
+}
+
+// POST JSON to T-Bank using the Russian trusted CA bundle in addition to Node's
+// built-in root CAs. Only this request uses the custom agent; Resend uses fetch normally.
+async function tbankPost(url, payload) {
+  const certPath = path.join(__dirname, '..', '..', 'certs', 'russian-trusted-ca-bundle.pem');
+  // fs.readFileSync throws if the file is missing — caught by the outer try/catch → 502
+  const russianCa = fs.readFileSync(certPath, 'utf8');
+
+  const agent = new https.Agent({
+    ca: [...tls.rootCertificates, russianCa],
+    // rejectUnauthorized defaults to true — TLS verification remains fully enabled
+  });
+
+  const body = JSON.stringify(payload);
+  const { hostname, pathname } = new URL(url);
+
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        hostname,
+        path:    pathname,
+        method:  'POST',
+        headers: {
+          'Content-Type':   'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+        agent,
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', chunk => { raw += chunk; });
+        res.on('end', () => {
+          try { resolve(JSON.parse(raw)); }
+          catch (e) { reject(new Error(`T-Bank JSON parse error: ${e.message}`)); }
+        });
+      },
+    );
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 }
 
 exports.handler = async (event) => {
@@ -166,13 +212,7 @@ exports.handler = async (event) => {
   });
 
   try {
-    const tRes = await fetch('https://securepay.tinkoff.ru/v2/Init', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
-    });
-
-    const result = await tRes.json();
+    const result = await tbankPost('https://securepay.tinkoff.ru/v2/Init', payload);
 
     if (result.Success && result.PaymentURL) {
       // Store buyer data so the webhook can retrieve it later.
